@@ -1,6 +1,9 @@
+import 'package:bmiapp/components/mi_boton.dart';
 import 'package:bmiapp/components/my_button.dart';
 import 'package:bmiapp/components/my_card.dart';
+import 'package:bmiapp/models/calculadora_bmi.dart';
 import 'package:bmiapp/screens/constants.dart';
+import 'package:bmiapp/screens/results_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -9,10 +12,19 @@ class InputPage extends StatefulWidget {
   _InputPageState createState() => _InputPageState();
 }
 
+enum Sexo { Mujer, Hombre }
+
 class _InputPageState extends State<InputPage> {
   int altura = 173;
   int peso = 94;
   int edad = 22;
+  Sexo sexo = Sexo.Mujer;
+
+  void cambiarAltura(double newValue) {
+    setState(() {
+      altura = newValue.round();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +40,14 @@ class _InputPageState extends State<InputPage> {
               children: <Widget>[
                 Expanded(
                   child: MyCard(
-                    color: kInactiveCardColour,
+                    onTap: () {
+                      setState(() {
+                        sexo = Sexo.Hombre;
+                      });
+                    },
+                    color: sexo == Sexo.Hombre
+                        ? kActiveCardColour
+                        : kInactiveCardColour,
                     content: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -51,7 +70,14 @@ class _InputPageState extends State<InputPage> {
                 ),
                 Expanded(
                   child: MyCard(
-                    color: kActiveCardColour,
+                    onTap: () {
+                      setState(() {
+                        sexo = Sexo.Mujer;
+                      });
+                    },
+                    color: sexo == Sexo.Mujer
+                        ? kActiveCardColour
+                        : kInactiveCardColour,
                     content: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -96,13 +122,10 @@ class _InputPageState extends State<InputPage> {
                   Flexible(
                     child: Slider(
                       value: altura.toDouble(),
+                      activeColor: kBottomContainerColour,
                       min: 120,
                       max: 220,
-                      onChanged: (newValue) {
-                        setState(() {
-                          altura = newValue.round();
-                        });
-                      },
+                      onChanged: cambiarAltura,
                     ),
                   )
                 ],
@@ -125,7 +148,7 @@ class _InputPageState extends State<InputPage> {
                           ),
                         ),
                         Text(
-                          '60',
+                          '$peso',
                           style: TextStyle(
                             fontSize: 40,
                           ),
@@ -135,12 +158,22 @@ class _InputPageState extends State<InputPage> {
                           children: <Widget>[
                             MyButton(
                               iconData: FontAwesomeIcons.minus,
+                              onTap: () {
+                                setState(() {
+                                  --peso;
+                                });
+                              },
                             ),
                             SizedBox(
                               width: 10,
                             ),
                             MyButton(
                               iconData: FontAwesomeIcons.plus,
+                              onTap: () {
+                                setState(() {
+                                  ++peso;
+                                });
+                              },
                             ),
                           ],
                         ),
@@ -161,7 +194,7 @@ class _InputPageState extends State<InputPage> {
                           ),
                         ),
                         Text(
-                          '20',
+                          '$edad',
                           style: TextStyle(
                             fontSize: 40,
                           ),
@@ -171,12 +204,22 @@ class _InputPageState extends State<InputPage> {
                           children: <Widget>[
                             MyButton(
                               iconData: FontAwesomeIcons.minus,
+                              onTap: () {
+                                setState(() {
+                                  --edad;
+                                });
+                              },
                             ),
                             SizedBox(
                               width: 10,
                             ),
                             MyButton(
                               iconData: FontAwesomeIcons.plus,
+                              onTap: () {
+                                setState(() {
+                                  ++edad;
+                                });
+                              },
                             ),
                           ],
                         ),
@@ -186,6 +229,29 @@ class _InputPageState extends State<InputPage> {
                 ),
               ],
             ),
+          ),
+          MiBoton(
+            nombreBoton: 'CALCULATE',
+            onTap: () {
+              var calculadoraBMI = CalculadoraBMI(
+                altura: altura,
+                peso: peso,
+              );
+              var bmi = calculadoraBMI.calcularBMI();
+              var resultado = calculadoraBMI.getResultado();
+              var interpretacion = calculadoraBMI.getInterpretacion();
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ResultsPage(
+                    bmi: bmi,
+                    resultado: resultado,
+                    interpretacion: interpretacion,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
